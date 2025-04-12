@@ -1,7 +1,7 @@
-part of 'main_screen_bloc.dart';
+part of 'select_location_screen_bloc.dart';
 
-class MainScreenState extends Equatable {
-  const MainScreenState({
+class SelectLocationScreenState extends Equatable {
+  const SelectLocationScreenState({
     this.pickupLocation,
     this.destinationLocation,
     this.passengersCount = 0,
@@ -13,12 +13,6 @@ class MainScreenState extends Equatable {
   final DateTime? time;
   final int passengersCount;
 
-  bool get isFilled =>
-      pickupLocation != null &&
-      destinationLocation != null &&
-      time != null &&
-      passengersCount > 0;
-
   @override
   List<Object?> get props => [
     pickupLocation,
@@ -27,13 +21,13 @@ class MainScreenState extends Equatable {
     time,
   ];
 
-  MainScreenState copyWith({
+  SelectLocationScreenState copyWith({
     LatLng? pickupLocation,
     LatLng? destinationLocation,
     int? passengersCount,
     DateTime? time,
   }) {
-    return MainScreenState(
+    return SelectLocationScreenState(
       pickupLocation: pickupLocation ?? this.pickupLocation,
       destinationLocation: destinationLocation ?? this.destinationLocation,
       passengersCount: passengersCount ?? this.passengersCount,

@@ -14,12 +14,6 @@ class AppColorsTokens {
   // $background-02
   static Color get background02 => Color(0xFFFFFFFF);
 
-  // $text-01
-  static Color get text01 => Color(0xFFFFFFFF);
-
-  // $text-02
-  static Color get text02 => Color(0xFFEE2324);
-
   // $background-overlay-01
   static Color get backgroundOverlay01 =>
       AppColors.black.withValues(alpha: 0.6);
@@ -85,17 +79,17 @@ class AppColorsTokens {
 
   /// Text
 
-  // // $text-01
-  // static Color get text01 => AppColors.black;
+  // $text-01
+  static Color get text01 => Color(0xFFFFFFFF);
 
-  // // $text-02
-  // static Color get text02 => AppColors.n800;
+  // $text-02
+  static Color get text02 => Color(0xFFEE2324);
 
   // $text-03
-  static Color get text03 => AppColors.n400;
+  static Color get text03 =>  Color(0xFF2756A1);
 
   // $text-04
-  static Color get text04 => AppColors.black.withValues(alpha: 0.15);
+  static Color get text04 => AppColors.black;
 
   // $text-05
   static Color get text05 => AppColors.black.withValues(alpha: 0.5);

@@ -8,7 +8,7 @@ class CustomAppBar extends AppBar {
         title: Text(
           title,
           style: design.AppTextStylesTokens.heading03(
-            color: design.AppColorsTokens.textInv01,
+            color: design.AppColorsTokens.text03,
           ),
         ),
       );
