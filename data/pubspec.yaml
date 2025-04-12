@@ -1,0 +1,49 @@
+name: data
+description: The data layer of the app.
+version: 0.0.1
+homepage: none
+publish_to: none
+
+environment:
+  sdk: ^3.5.4
+  flutter: 3.29.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: 1.0.8
+
+  # Layer modules
+  domain:
+    path: ../domain
+
+  # General utils
+  logger: 2.5.0
+
+  # DI
+  injectable: 2.5.0
+  get_it: 8.0.3
+
+  # http
+  dio: 5.8.0+1
+  dio_smart_retry: 7.0.1
+  dio_intercept_to_curl: 0.2.0
+  json_annotation: 4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: any
+
+  flutter_lints: 5.0.0
+
+  # mockito
+  mockito: 5.4.5
+
+  build_runner: 2.4.15
+  injectable_generator: 2.7.0
+  json_serializable: 6.9.4
+
+flutter:
+  uses-material-design: true
