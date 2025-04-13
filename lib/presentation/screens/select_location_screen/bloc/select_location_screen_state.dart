@@ -2,36 +2,28 @@ part of 'select_location_screen_bloc.dart';
 
 class SelectLocationScreenState extends Equatable {
   const SelectLocationScreenState({
-    this.pickupLocation,
-    this.destinationLocation,
-    this.passengersCount = 0,
-    this.time,
+    this.currentLocation,
+    this.location,
+    this.searching = false,
   });
 
-  final LatLng? pickupLocation;
-  final LatLng? destinationLocation;
-  final DateTime? time;
-  final int passengersCount;
+  final LatLng? currentLocation;
+  final LatLng? location;
+  final bool searching;
 
   @override
-  List<Object?> get props => [
-    pickupLocation,
-    destinationLocation,
-    passengersCount,
-    time,
-  ];
+  List<Object?> get props => [currentLocation, location, searching];
 
   SelectLocationScreenState copyWith({
-    LatLng? pickupLocation,
-    LatLng? destinationLocation,
-    int? passengersCount,
-    DateTime? time,
+    LatLng? currentLocation,
+    LatLng? location,
+    bool? searching,
+    bool clearLocation = false,
   }) {
     return SelectLocationScreenState(
-      pickupLocation: pickupLocation ?? this.pickupLocation,
-      destinationLocation: destinationLocation ?? this.destinationLocation,
-      passengersCount: passengersCount ?? this.passengersCount,
-      time: time ?? this.time,
+      currentLocation: currentLocation ?? this.currentLocation,
+      location: clearLocation ? null : location ?? this.location,
+      searching: searching ?? this.searching,
     );
   }
 }

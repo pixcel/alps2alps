@@ -1,9 +1,11 @@
 import 'package:alps2alps/presentation/screens/main_screen/bloc/main_screen_bloc.dart';
+import 'package:alps2alps/presentation/screens/select_location_screen/select_location_screen.dart';
 import 'package:alps2alps/presentation/widgets/custom_app_bar.dart';
 import 'package:design/design.dart' as design;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
@@ -132,7 +134,121 @@ class _MainScreenState extends State<MainScreen>
                                 _mainScreenBloc.add(SetTime(time: result));
                               }
                             },
-                            child: Text('Change'),
+                            child: Text(state.time == null ? 'Set' : 'Change'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: design.AppSpacingTokens.one,
+                                ),
+                                child: Text(
+                                  'Pick-Up Location',
+                                  style: design.AppTextStylesTokens.heading03(
+                                    color: design.AppColorsTokens.text04,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                state.pickupLocation == null
+                                    ? 'No set'
+                                    : state.pickupLocation.toString(),
+                                style: design.AppTextStylesTokens.heading04(
+                                  color: design.AppColorsTokens.text04,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: design.AppSpacingTokens.four,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await Navigator.of(
+                                context,
+                                rootNavigator: true,
+                              ).push(SelectLocationScreen.route());
+
+                              if (result is LatLng) {
+                                _mainScreenBloc.add(
+                                  SetPickupLocation(location: result),
+                                );
+                              }
+                            },
+                            child: Text(
+                              state.pickupLocation == null ? 'Set' : 'Change',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: design.AppSpacingTokens.one,
+                                ),
+                                child: Text(
+                                  'Drop-Off Destination',
+                                  style: design.AppTextStylesTokens.heading03(
+                                    color: design.AppColorsTokens.text04,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                state.destinationLocation == null
+                                    ? 'No set'
+                                    : state.destinationLocation.toString(),
+                                style: design.AppTextStylesTokens.heading04(
+                                  color: design.AppColorsTokens.text04,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: design.AppSpacingTokens.four,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final result = await Navigator.of(
+                                context,
+                                rootNavigator: true,
+                              ).push(SelectLocationScreen.route());
+
+                              if (result is LatLng) {
+                                _mainScreenBloc.add(
+                                  SetDestinationLocation(location: result),
+                                );
+                              }
+                            },
+                            child: Text(
+                              state.destinationLocation == null
+                                  ? 'Set'
+                                  : 'Change',
+                            ),
                           ),
                         ),
                       ],

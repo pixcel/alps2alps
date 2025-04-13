@@ -29,5 +29,6 @@ class AppOverlayStyleTokens {
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
           statusBarColor: Color(0xFF2756A1),
+          systemStatusBarContrastEnforced: true,
         );
 }

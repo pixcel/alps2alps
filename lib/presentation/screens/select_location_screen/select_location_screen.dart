@@ -1,7 +1,5 @@
-import 'dart:async';
-
-import 'package:alps2alps/presentation/screens/main_screen/bloc/main_screen_bloc.dart';
-import 'package:alps2alps/presentation/screens/select_location_screen/map_constants.dart';
+import 'package:alps2alps/general/constants.dart';
+import 'package:alps2alps/presentation/screens/select_location_screen/bloc/select_location_screen_bloc.dart';
 import 'package:design/design.dart' as design;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,80 +22,126 @@ class SelectLocationScreen extends StatefulWidget {
 
 class _SelectLocationScreenState extends State<SelectLocationScreen>
     with SingleTickerProviderStateMixin {
-  late final MainScreenBloc _mainScreenBloc;
+  late final SelectLocationScreenBloc _bloc;
 
-  final _controller = Completer<GoogleMapController>();
-
-  static const _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
-  static const CameraPosition _kLake = CameraPosition(
-    bearing: 192.8334901395799,
-    target: LatLng(37.43296265331129, -122.08832357078792),
-    tilt: 59.440717697143555,
-    zoom: 19.151926040649414,
-  );
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
-    _mainScreenBloc = MainScreenBloc();
+    _bloc = SelectLocationScreenBloc()..add(const Initialize());
     super.initState();
   }
 
   @override
   void dispose() {
-    _mainScreenBloc.close();
+    _bloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => _mainScreenBloc)],
-      child: BlocBuilder<MainScreenBloc, MainScreenState>(
-        builder: (context, state) {
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: design.AppOverlayStyleTokens.systemUiOverlayStyle,
-            child: Scaffold(
-              backgroundColor: design.AppColorsTokens.background02,
-              body: GoogleMap(
-                initialCameraPosition: MapConstants.defaultMapPosition,
-                // onCameraIdle: store.handleCameraIdle,
-                // onCameraMoveStarted: store.handleCameraMoveStarted,
-                myLocationButtonEnabled: false,
-                myLocationEnabled: false,
-                zoomControlsEnabled: false,
-                mapToolbarEnabled: false,
-                compassEnabled: false,
-                padding: EdgeInsets.only(bottom: design.AppSpacingTokens.four),
-                style: MapConstants.mapStyle,
-                onMapCreated: (GoogleMapController controller) {
-                  // TODO: need to omplement
-                  //store.setMapController(controller);
-                },
-
-                // mapType: MapType.hybrid,
-                // initialCameraPosition: _kGooglePlex,
-                // onMapCreated: (GoogleMapController controller) {
-                //   _controller.complete(controller);
-                // },
-              ),
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: _goToTheLake,
-                label: const Text('To the lake!'),
-                icon: const Icon(Icons.directions_boat),
-              ),
-            ),
+      providers: [BlocProvider(create: (_) => _bloc)],
+      child: BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
+        listenWhen: (previous, current) {
+          return previous.currentLocation == null &&
+              current.currentLocation != null;
+        },
+        listener: (context, state) {
+          _mapController?.animateCamera(
+            CameraUpdate.newLatLngZoom(state.currentLocation!, 12),
           );
         },
+        child: BlocBuilder<SelectLocationScreenBloc, SelectLocationScreenState>(
+          builder: (context, state) {
+            final markers = <Marker>{};
+            if (state.location != null) {
+              markers.add(
+                Marker(
+                  markerId: MarkerId("custom_marker"),
+                  position: state.location!,
+                ),
+              );
+            }
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: design.AppOverlayStyleTokens.systemUiOverlayStyle,
+              child: Scaffold(
+                backgroundColor: design.AppColorsTokens.background02,
+                body: Stack(
+                  children: [
+                    GoogleMap(
+                      initialCameraPosition: Constants.defaultMapPosition,
+                      myLocationButtonEnabled: false,
+                      myLocationEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      compassEnabled: false,
+                      padding: EdgeInsets.only(
+                        bottom: design.AppSpacingTokens.four,
+                      ),
+                      style: Constants.defaultMapStyle,
+                      onMapCreated: (GoogleMapController controller) {
+                        _mapController = controller;
+                      },
+                      onLongPress: (LatLng value) {
+                        _bloc.add(SetLocation(location: value));
+                      },
+                      markers: markers,
+                    ),
+                    Positioned(
+                      top: design.AppSpacingTokens.eighteen,
+                      left: design.AppSpacingTokens.four,
+                      right: design.AppSpacingTokens.four,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: design.AppSpacingTokens.two,
+                          vertical: design.AppSpacingTokens.one,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            design.AppSpacingTokens.nine,
+                          ),
+                          boxShadow: [design.AppDecorationTokens.boxShadow1],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: Icon(Icons.arrow_back_ios),
+                            ),
+                            Text(
+                              'Please select point',
+                              style: design.AppTextStylesTokens.heading04(
+                                color: design.AppColorsTokens.text03,
+                              ),
+                            ),
+                            Visibility(
+                              visible: state.location != null,
+                              maintainSize: true,
+                              maintainAnimation: true,
+                              maintainState: true,
+                              child: IconButton(
+                                onPressed: () {
+                                  _bloc.add(ResetLocation());
+                                },
+                                icon: Icon(Icons.close),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
-  }
-
-  Future<void> _goToTheLake() async {
-    final controller = await _controller.future;
-    await controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
   }
 }

@@ -7,9 +7,10 @@ class CustomAppBar extends AppBar {
     : super(
         title: Text(
           title,
-          style: design.AppTextStylesTokens.heading03(
+          style: design.AppTextStylesTokens.heading04(
             color: design.AppColorsTokens.text03,
           ),
         ),
+        systemOverlayStyle: design.AppOverlayStyleTokens.systemUiOverlayStyle,
       );
 }
