@@ -28,299 +28,314 @@ class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
   final _dateFormat = DateFormat('d MMMM yyyy, HH:mm');
 
-  late final MainScreenBloc _mainScreenBloc;
+  late final MainScreenBloc _bloc;
 
   @override
   void initState() {
-    _mainScreenBloc = MainScreenBloc(
-      mapRepository: getIt<domain.MapRepository>(),
-    );
+    _bloc = MainScreenBloc(mapRepository: getIt<domain.MapRepository>());
     super.initState();
   }
 
   @override
   void dispose() {
-    _mainScreenBloc.close();
+    _bloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (_) => _mainScreenBloc)],
-      child: BlocBuilder<MainScreenBloc, MainScreenState>(
-        builder: (context, state) {
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: design.AppOverlayStyleTokens.systemUiOverlayStyle,
-            child: Scaffold(
-              appBar: CustomAppBar(
-                title: 'Find Your Ski Transfer & Book Online',
-              ),
-              backgroundColor: design.AppColorsTokens.background02,
-              body: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                            right: design.AppSpacingTokens.four,
+      providers: [BlocProvider(create: (_) => _bloc)],
+      child: MultiBlocListener(
+        listeners: [
+          // when detected current location
+          BlocListener<MainScreenBloc, MainScreenState>(
+            listenWhen: (previous, current) {
+              return previous.transports == null &&
+                  current.transports != null &&
+                  current.transports!.isNotEmpty;
+            },
+            listener: (context, state) {
+              _showCountTransportDialog(
+                count: state.transports?.length ?? 0,
+              ).whenComplete(() {
+                _bloc.add(Reset());
+              });
+            },
+          ),
+        ],
+        child: BlocBuilder<MainScreenBloc, MainScreenState>(
+          builder: (context, state) {
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: design.AppOverlayStyleTokens.systemUiOverlayStyle,
+              child: Scaffold(
+                appBar: CustomAppBar(
+                  title: 'Find Your Ski Transfer & Book Online',
+                ),
+                backgroundColor: design.AppColorsTokens.background02,
+                body: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              right: design.AppSpacingTokens.four,
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.search
+                                      ? null
+                                      : () => _bloc.add(RemovePassengers()),
+                              child: Text('-'),
+                            ),
                           ),
-                          child: ElevatedButton(
-                            onPressed:
-                                state.search
-                                    ? null
-                                    : () =>
-                                        _mainScreenBloc.add(RemovePassengers()),
-                            child: Text('-'),
-                          ),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Passengers: ${state.passengersCount}',
-                              style: design.AppTextStylesTokens.heading03(
-                                color: design.AppColorsTokens.text04,
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                'Passengers: ${state.passengersCount}',
+                                style: design.AppTextStylesTokens.heading03(
+                                  color: design.AppColorsTokens.text04,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: design.AppSpacingTokens.four,
-                          ),
-                          child: ElevatedButton(
-                            onPressed:
-                                state.search
-                                    ? null
-                                    : () =>
-                                        _mainScreenBloc.add(AddPassengers()),
-                            child: Text('+'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: design.AppSpacingTokens.one,
-                                ),
-                                child: Text(
-                                  'Date & Time',
-                                  style: design.AppTextStylesTokens.heading03(
-                                    color: design.AppColorsTokens.text04,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                state.time == null
-                                    ? 'No set'
-                                    : _dateFormat.format(state.time!),
-                                style: design.AppTextStylesTokens.heading04(
-                                  color: design.AppColorsTokens.text04,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: design.AppSpacingTokens.four,
-                          ),
-                          child: ElevatedButton(
-                            onPressed:
-                                state.search
-                                    ? null
-                                    : () async {
-                                      final result = await _pickDateTime(
-                                        context,
-                                      );
-                                      if (result != null) {
-                                        _mainScreenBloc.add(
-                                          SetTime(time: result),
-                                        );
-                                      }
-                                    },
-                            child: Text(state.time == null ? 'Set' : 'Change'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: design.AppSpacingTokens.one,
-                                ),
-                                child: Text(
-                                  'Pick-Up Location',
-                                  style: design.AppTextStylesTokens.heading03(
-                                    color: design.AppColorsTokens.text04,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                state.pickupAddress == null
-                                    ? 'No set'
-                                    : state.pickupAddress.toString(),
-                                style: design.AppTextStylesTokens.heading04(
-                                  color: design.AppColorsTokens.text04,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: design.AppSpacingTokens.four,
-                          ),
-                          child: ElevatedButton(
-                            onPressed:
-                                state.search
-                                    ? null
-                                    : () async {
-                                      final result = await Navigator.of(
-                                        context,
-                                        rootNavigator: true,
-                                      ).push(
-                                        SelectLocationScreen.route(
-                                          title: 'Pick-Up Location',
-                                        ),
-                                      );
-
-                                      if (result is domain.AddressModel) {
-                                        _mainScreenBloc.add(
-                                          SetPickupLocation(address: result),
-                                        );
-                                      }
-                                    },
-                            child: Text(
-                              state.pickupAddress == null ? 'Set' : 'Change',
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: design.AppSpacingTokens.four,
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.search
+                                      ? null
+                                      : () => _bloc.add(AddPassengers()),
+                              child: Text('+'),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(design.AppSpacingTokens.four),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: design.AppSpacingTokens.one,
+                    Padding(
+                      padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: design.AppSpacingTokens.one,
+                                  ),
+                                  child: Text(
+                                    'Date & Time',
+                                    style: design.AppTextStylesTokens.heading03(
+                                      color: design.AppColorsTokens.text04,
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  'Drop-Off Destination',
-                                  style: design.AppTextStylesTokens.heading03(
+                                Text(
+                                  state.time == null
+                                      ? 'No set'
+                                      : _dateFormat.format(state.time!),
+                                  style: design.AppTextStylesTokens.heading04(
                                     color: design.AppColorsTokens.text04,
                                   ),
                                 ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: design.AppSpacingTokens.four,
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.search
+                                      ? null
+                                      : () async {
+                                        final result = await _pickDateTime(
+                                          context,
+                                        );
+                                        if (result != null) {
+                                          _bloc.add(SetTime(time: result));
+                                        }
+                                      },
+                              child: Text(
+                                state.time == null ? 'Set' : 'Change',
                               ),
-                              Text(
-                                state.destinationAddress == null
-                                    ? 'No set'
-                                    : state.destinationAddress.toString(),
-                                style: design.AppTextStylesTokens.heading04(
-                                  color: design.AppColorsTokens.text04,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: design.AppSpacingTokens.one,
+                                  ),
+                                  child: Text(
+                                    'Pick-Up Location',
+                                    style: design.AppTextStylesTokens.heading03(
+                                      color: design.AppColorsTokens.text04,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  state.pickupAddress == null
+                                      ? 'No set'
+                                      : state.pickupAddress.toString(),
+                                  style: design.AppTextStylesTokens.heading04(
+                                    color: design.AppColorsTokens.text04,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: design.AppSpacingTokens.four,
-                          ),
-                          child: ElevatedButton(
-                            onPressed:
-                                state.search
-                                    ? null
-                                    : () async {
-                                      final result = await Navigator.of(
-                                        context,
-                                        rootNavigator: true,
-                                      ).push(
-                                        SelectLocationScreen.route(
-                                          title: 'Drop-Off Destination',
-                                        ),
-                                      );
-
-                                      if (result is domain.AddressModel) {
-                                        _mainScreenBloc.add(
-                                          SetDestinationLocation(
-                                            address: result,
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: design.AppSpacingTokens.four,
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.search
+                                      ? null
+                                      : () async {
+                                        final result = await Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).push(
+                                          SelectLocationScreen.route(
+                                            title: 'Pick-Up Location',
                                           ),
                                         );
-                                      }
-                                    },
-                            child: Text(
-                              state.destinationAddress == null
-                                  ? 'Set'
-                                  : 'Change',
+
+                                        if (result is domain.AddressModel) {
+                                          _bloc.add(
+                                            SetPickupLocation(address: result),
+                                          );
+                                        }
+                                      },
+                              child: Text(
+                                state.pickupAddress == null ? 'Set' : 'Change',
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerDocked,
-              floatingActionButton: Padding(
-                padding: EdgeInsets.all(design.AppSpacingTokens.four),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            state.isFilled
-                                ? () => _mainScreenBloc.add(FindTransport())
-                                : null,
-                        child:
-                            state.search
-                                ? SizedBox(
-                                  width: design.AppSpacingTokens.four,
-                                  height: design.AppSpacingTokens.four,
-                                  child: AppProgressWidget(
-                                    size: design.AppSpacingTokens.four,
+                    Padding(
+                      padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: design.AppSpacingTokens.one,
                                   ),
-                                )
-                                : Text('Find transport'),
+                                  child: Text(
+                                    'Drop-Off Destination',
+                                    style: design.AppTextStylesTokens.heading03(
+                                      color: design.AppColorsTokens.text04,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  state.destinationAddress == null
+                                      ? 'No set'
+                                      : state.destinationAddress.toString(),
+                                  style: design.AppTextStylesTokens.heading04(
+                                    color: design.AppColorsTokens.text04,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: design.AppSpacingTokens.four,
+                            ),
+                            child: ElevatedButton(
+                              onPressed:
+                                  state.search
+                                      ? null
+                                      : () async {
+                                        final result = await Navigator.of(
+                                          context,
+                                          rootNavigator: true,
+                                        ).push(
+                                          SelectLocationScreen.route(
+                                            title: 'Drop-Off Destination',
+                                          ),
+                                        );
+
+                                        if (result is domain.AddressModel) {
+                                          _bloc.add(
+                                            SetDestinationLocation(
+                                              address: result,
+                                            ),
+                                          );
+                                        }
+                                      },
+                              child: Text(
+                                state.destinationAddress == null
+                                    ? 'Set'
+                                    : 'Change',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
+                floatingActionButtonLocation:
+                    FloatingActionButtonLocation.centerDocked,
+                floatingActionButton: Padding(
+                  padding: EdgeInsets.all(design.AppSpacingTokens.four),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed:
+                              state.isFilled
+                                  ? () => _bloc.add(FindTransport())
+                                  : null,
+                          child:
+                              state.search
+                                  ? SizedBox(
+                                    width: design.AppSpacingTokens.four,
+                                    height: design.AppSpacingTokens.four,
+                                    child: AppProgressWidget(
+                                      size: design.AppSpacingTokens.four,
+                                    ),
+                                  )
+                                  : Text('Find transport'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -356,5 +371,25 @@ class _MainScreenState extends State<MainScreen>
     }
 
     return null;
+  }
+
+  Future<void> _showCountTransportDialog({required int count}) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Transports"),
+          content: Text("We found $count transport options for you"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // close the dialog
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

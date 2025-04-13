@@ -36,3 +36,7 @@ class RemovePassengers extends MainScreenEvent {
 class FindTransport extends MainScreenEvent {
   const FindTransport();
 }
+
+class Reset extends MainScreenEvent {
+  const Reset();
+}

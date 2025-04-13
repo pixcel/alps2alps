@@ -16,9 +16,14 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
     on<AddPassengers>(_onAddPassengers);
     on<RemovePassengers>(_onRemovePassengers);
     on<FindTransport>(_onFindTransport);
+    on<Reset>(_onReset);
   }
 
   final domain.MapRepository mapRepository;
+
+  FutureOr<void> _onReset(Reset event, Emitter<MainScreenState> emit) async {
+    emit(state.copyWith(reset: true, cleanTransports: true));
+  }
 
   FutureOr<void> _onSetPickupLocation(
     SetPickupLocation event,
@@ -85,9 +90,9 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
       emit(state.copyWith(search: false));
 
       if (result.hasData) {
-        // TODO:
+        emit(state.copyWith(search: false, transports: result.data));
       } else {
-        // TODO:
+        emit(state.copyWith(search: false));
       }
     }
   }
