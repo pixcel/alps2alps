@@ -1,0 +1,44 @@
+name: domain
+description: The domain layer of the app.
+version: 0.0.1
+homepage: none
+publish_to: none
+
+environment:
+  sdk: ^3.5.4
+  flutter: 3.29.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: 1.0.8
+
+  logger: 2.5.0
+  google_maps_flutter: 2.12.1
+  geolocator: 10.1.0
+  equatable: 2.0.7
+
+  # Layer modules
+  data:
+    path: ../data
+
+  # DI
+  injectable: 2.5.0
+  get_it: 8.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: any
+
+  flutter_lints: 5.0.0
+
+  # mockito
+  mockito: 5.4.5
+
+  build_runner: 2.4.15
+  injectable_generator: 2.7.0
+
+flutter:
+  uses-material-design: true

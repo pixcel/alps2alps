@@ -1,0 +1,54 @@
+name: alps2alps
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+  flutter: 3.29.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+  # General utils
+  google_maps_flutter: 2.12.1
+  geolocator: 10.1.0
+  equatable: 2.0.7
+  intl: 0.20.2
+
+  # DI
+  injectable: 2.5.0
+  get_it: 8.0.3
+
+  # State management
+  flutter_bloc: 9.1.0
+
+  # Layer modules
+  domain:
+    path: ./domain
+  design:
+    path: ./design
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  test: any
+  mockito: 5.4.5
+
+  flutter_lints: 5.0.0
+
+  build_runner: 2.4.15
+  injectable_generator: 2.7.0
+
+flutter:
+  uses-material-design: true

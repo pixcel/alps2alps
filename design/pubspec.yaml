@@ -1,0 +1,25 @@
+name: design
+description: The design layer of the app.
+version: 0.0.1
+homepage: none
+publish_to: none
+
+environment:
+  sdk: ^3.5.4
+  flutter: 3.29.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: 1.0.8
+  google_fonts: 6.2.1
+
+dev_dependencies:
+  test: any
+
+  flutter_lints: 5.0.0
+
+flutter:
+  uses-material-design: true
+
