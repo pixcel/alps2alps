@@ -1,15 +1,15 @@
 import 'dart:async';
 
+import 'package:domain/domain.dart' as domain;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 part 'main_screen_event.dart';
 
 part 'main_screen_state.dart';
 
 class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
-  MainScreenBloc() : super(MainScreenState()) {
+  MainScreenBloc({required this.mapRepository}) : super(MainScreenState()) {
     on<SetPickupLocation>(_onSetPickupLocation);
     on<SetDestinationLocation>(_onSetDestinationLocation);
     on<SetTime>(_onSetTime);
@@ -18,18 +18,20 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
     on<FindTransport>(_onFindTransport);
   }
 
+  final domain.MapRepository mapRepository;
+
   FutureOr<void> _onSetPickupLocation(
     SetPickupLocation event,
     Emitter<MainScreenState> emit,
   ) async {
-    emit(state.copyWith(pickupLocation: event.location));
+    emit(state.copyWith(pickupAddress: event.address));
   }
 
   FutureOr<void> _onSetDestinationLocation(
     SetDestinationLocation event,
     Emitter<MainScreenState> emit,
   ) async {
-    emit(state.copyWith(destinationLocation: event.location));
+    emit(state.copyWith(destinationAddress: event.address));
   }
 
   FutureOr<void> _onSetTime(
@@ -64,6 +66,29 @@ class MainScreenBloc extends Bloc<MainScreenEvent, MainScreenState> {
     FindTransport event,
     Emitter<MainScreenState> emit,
   ) async {
-    // TODO: need to implement
+    if (!state.search &&
+        state.pickupAddress != null &&
+        state.destinationAddress != null &&
+        state.time != null &&
+        state.passengersCount > 0) {
+      emit(state.copyWith(search: true));
+
+      final result = await mapRepository.findTransport(
+        config: domain.FindTransportConfig(
+          pickupAddress: state.pickupAddress!,
+          destinationAddress: state.destinationAddress!,
+          time: state.time!,
+          passengersCount: state.passengersCount,
+        ),
+      );
+
+      emit(state.copyWith(search: false));
+
+      if (result.hasData) {
+        // TODO:
+      } else {
+        // TODO:
+      }
+    }
   }
 }

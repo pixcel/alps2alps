@@ -20,4 +20,19 @@ class ConfigRepository
     });
     return response;
   }
+
+  @override
+  Future<domain.RepositoryResult<List<domain.TransportModel>>> findTransport(
+      {required domain.FindTransportConfig config}) async {
+    final response = await execute<List<domain.TransportModel>>(() async {
+      // TODO: it's just mock for demonstrate logic
+      await Future.delayed(Duration(seconds: 2));
+      final List<domain.TransportModel> fakeList = [];
+      fakeList.add(domain.TransportModel(name: 'Car 1'));
+      fakeList.add(domain.TransportModel(name: 'Car 2'));
+
+      return domain.RepositoryResult.completed(data: fakeList);
+    });
+    return response;
+  }
 }

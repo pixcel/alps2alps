@@ -8,15 +8,15 @@ sealed class MainScreenEvent extends Equatable {
 }
 
 class SetPickupLocation extends MainScreenEvent {
-  const SetPickupLocation({required this.location});
+  const SetPickupLocation({required this.address});
 
-  final LatLng location;
+  final domain.AddressModel address;
 }
 
 class SetDestinationLocation extends MainScreenEvent {
-  const SetDestinationLocation({required this.location});
+  const SetDestinationLocation({required this.address});
 
-  final LatLng location;
+  final domain.AddressModel address;
 }
 
 class SetTime extends MainScreenEvent {

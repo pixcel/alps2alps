@@ -1,11 +1,13 @@
+import 'package:alps2alps/di/configure_dependencies.dart';
 import 'package:alps2alps/presentation/screens/main_screen/bloc/main_screen_bloc.dart';
 import 'package:alps2alps/presentation/screens/select_location_screen/select_location_screen.dart';
+import 'package:alps2alps/presentation/widgets/app_progress_widget.dart';
 import 'package:alps2alps/presentation/widgets/custom_app_bar.dart';
 import 'package:design/design.dart' as design;
+import 'package:domain/domain.dart' as domain;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
@@ -30,7 +32,9 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   void initState() {
-    _mainScreenBloc = MainScreenBloc();
+    _mainScreenBloc = MainScreenBloc(
+      mapRepository: getIt<domain.MapRepository>(),
+    );
     super.initState();
   }
 
@@ -65,7 +69,10 @@ class _MainScreenState extends State<MainScreen>
                           ),
                           child: ElevatedButton(
                             onPressed:
-                                () => _mainScreenBloc.add(RemovePassengers()),
+                                state.search
+                                    ? null
+                                    : () =>
+                                        _mainScreenBloc.add(RemovePassengers()),
                             child: Text('-'),
                           ),
                         ),
@@ -85,7 +92,10 @@ class _MainScreenState extends State<MainScreen>
                           ),
                           child: ElevatedButton(
                             onPressed:
-                                () => _mainScreenBloc.add(AddPassengers()),
+                                state.search
+                                    ? null
+                                    : () =>
+                                        _mainScreenBloc.add(AddPassengers()),
                             child: Text('+'),
                           ),
                         ),
@@ -128,12 +138,19 @@ class _MainScreenState extends State<MainScreen>
                             left: design.AppSpacingTokens.four,
                           ),
                           child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await _pickDateTime(context);
-                              if (result != null) {
-                                _mainScreenBloc.add(SetTime(time: result));
-                              }
-                            },
+                            onPressed:
+                                state.search
+                                    ? null
+                                    : () async {
+                                      final result = await _pickDateTime(
+                                        context,
+                                      );
+                                      if (result != null) {
+                                        _mainScreenBloc.add(
+                                          SetTime(time: result),
+                                        );
+                                      }
+                                    },
                             child: Text(state.time == null ? 'Set' : 'Change'),
                           ),
                         ),
@@ -161,9 +178,9 @@ class _MainScreenState extends State<MainScreen>
                                 ),
                               ),
                               Text(
-                                state.pickupLocation == null
+                                state.pickupAddress == null
                                     ? 'No set'
-                                    : state.pickupLocation.toString(),
+                                    : state.pickupAddress.toString(),
                                 style: design.AppTextStylesTokens.heading04(
                                   color: design.AppColorsTokens.text04,
                                 ),
@@ -176,24 +193,27 @@ class _MainScreenState extends State<MainScreen>
                             left: design.AppSpacingTokens.four,
                           ),
                           child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await Navigator.of(
-                                context,
-                                rootNavigator: true,
-                              ).push(
-                                SelectLocationScreen.route(
-                                  title: 'Pick-Up Location',
-                                ),
-                              );
+                            onPressed:
+                                state.search
+                                    ? null
+                                    : () async {
+                                      final result = await Navigator.of(
+                                        context,
+                                        rootNavigator: true,
+                                      ).push(
+                                        SelectLocationScreen.route(
+                                          title: 'Pick-Up Location',
+                                        ),
+                                      );
 
-                              if (result is LatLng) {
-                                _mainScreenBloc.add(
-                                  SetPickupLocation(location: result),
-                                );
-                              }
-                            },
+                                      if (result is domain.AddressModel) {
+                                        _mainScreenBloc.add(
+                                          SetPickupLocation(address: result),
+                                        );
+                                      }
+                                    },
                             child: Text(
-                              state.pickupLocation == null ? 'Set' : 'Change',
+                              state.pickupAddress == null ? 'Set' : 'Change',
                             ),
                           ),
                         ),
@@ -221,9 +241,9 @@ class _MainScreenState extends State<MainScreen>
                                 ),
                               ),
                               Text(
-                                state.destinationLocation == null
+                                state.destinationAddress == null
                                     ? 'No set'
-                                    : state.destinationLocation.toString(),
+                                    : state.destinationAddress.toString(),
                                 style: design.AppTextStylesTokens.heading04(
                                   color: design.AppColorsTokens.text04,
                                 ),
@@ -236,24 +256,29 @@ class _MainScreenState extends State<MainScreen>
                             left: design.AppSpacingTokens.four,
                           ),
                           child: ElevatedButton(
-                            onPressed: () async {
-                              final result = await Navigator.of(
-                                context,
-                                rootNavigator: true,
-                              ).push(
-                                SelectLocationScreen.route(
-                                  title: 'Drop-Off Destination',
-                                ),
-                              );
+                            onPressed:
+                                state.search
+                                    ? null
+                                    : () async {
+                                      final result = await Navigator.of(
+                                        context,
+                                        rootNavigator: true,
+                                      ).push(
+                                        SelectLocationScreen.route(
+                                          title: 'Drop-Off Destination',
+                                        ),
+                                      );
 
-                              if (result is LatLng) {
-                                _mainScreenBloc.add(
-                                  SetDestinationLocation(location: result),
-                                );
-                              }
-                            },
+                                      if (result is domain.AddressModel) {
+                                        _mainScreenBloc.add(
+                                          SetDestinationLocation(
+                                            address: result,
+                                          ),
+                                        );
+                                      }
+                                    },
                             child: Text(
-                              state.destinationLocation == null
+                              state.destinationAddress == null
                                   ? 'Set'
                                   : 'Change',
                             ),
@@ -278,7 +303,16 @@ class _MainScreenState extends State<MainScreen>
                             state.isFilled
                                 ? () => _mainScreenBloc.add(FindTransport())
                                 : null,
-                        child: Text('Find transport'),
+                        child:
+                            state.search
+                                ? SizedBox(
+                                  width: design.AppSpacingTokens.four,
+                                  height: design.AppSpacingTokens.four,
+                                  child: AppProgressWidget(
+                                    size: design.AppSpacingTokens.four,
+                                  ),
+                                )
+                                : Text('Find transport'),
                       ),
                     ),
                   ],

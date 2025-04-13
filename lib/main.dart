@@ -25,7 +25,6 @@ void main() {
         GetIt.instance.allReady().whenComplete(() async {
           await SystemChrome.setPreferredOrientations(Constants.orientations);
           final configRepository = getIt<domain.ConfigRepository>();
-          // TODO: should be refactored
           await configRepository.initialize(config: domain.ConfigModel());
 
           runApp(

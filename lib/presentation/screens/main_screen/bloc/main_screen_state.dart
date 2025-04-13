@@ -2,42 +2,47 @@ part of 'main_screen_bloc.dart';
 
 class MainScreenState extends Equatable {
   const MainScreenState({
-    this.pickupLocation,
-    this.destinationLocation,
+    this.pickupAddress,
+    this.destinationAddress,
     this.passengersCount = 0,
     this.time,
+    this.search = false,
   });
 
-  final LatLng? pickupLocation;
-  final LatLng? destinationLocation;
+  final domain.AddressModel? pickupAddress;
+  final domain.AddressModel? destinationAddress;
   final DateTime? time;
   final int passengersCount;
+  final bool search;
 
   bool get isFilled =>
-      pickupLocation != null &&
-      destinationLocation != null &&
+      pickupAddress != null &&
+      destinationAddress != null &&
       time != null &&
       passengersCount > 0;
 
   @override
   List<Object?> get props => [
-    pickupLocation,
-    destinationLocation,
+    pickupAddress,
+    destinationAddress,
     passengersCount,
     time,
+    search,
   ];
 
   MainScreenState copyWith({
-    LatLng? pickupLocation,
-    LatLng? destinationLocation,
+    domain.AddressModel? pickupAddress,
+    domain.AddressModel? destinationAddress,
     int? passengersCount,
     DateTime? time,
+    bool? search,
   }) {
     return MainScreenState(
-      pickupLocation: pickupLocation ?? this.pickupLocation,
-      destinationLocation: destinationLocation ?? this.destinationLocation,
+      pickupAddress: pickupAddress ?? this.pickupAddress,
+      destinationAddress: destinationAddress ?? this.destinationAddress,
       passengersCount: passengersCount ?? this.passengersCount,
       time: time ?? this.time,
+      search: search ?? this.search,
     );
   }
 }
