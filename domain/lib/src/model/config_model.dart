@@ -1,7 +1,3 @@
 class ConfigModel {
-  // final String apiUrl;
-
-  // ConfigModel({
-  //   required this.apiUrl,
-  // });
+  // TODO: in general pass config for communicate with API
 }

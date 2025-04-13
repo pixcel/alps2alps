@@ -12,9 +12,4 @@ class ConfigRepository extends domain.ConfigRepository {
   Future<void> initialize({required domain.ConfigModel config}) async {
     _config = config;
   }
-
-  // @override
-  // String get baseApiUrl {
-  //   return config.apiUrl;
-  // }
 }

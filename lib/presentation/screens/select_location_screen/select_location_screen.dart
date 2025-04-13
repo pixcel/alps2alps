@@ -1,6 +1,8 @@
+import 'package:alps2alps/di/configure_dependencies.dart';
 import 'package:alps2alps/general/constants.dart';
 import 'package:alps2alps/presentation/screens/select_location_screen/bloc/select_location_screen_bloc.dart';
 import 'package:design/design.dart' as design;
+import 'package:domain/domain.dart' as domain;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,7 +30,9 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
 
   @override
   void initState() {
-    _bloc = SelectLocationScreenBloc()..add(const Initialize());
+    _bloc = SelectLocationScreenBloc(
+      mapRepository: getIt<domain.MapRepository>(),
+    )..add(const Initialize());
     super.initState();
   }
 
@@ -42,16 +46,30 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [BlocProvider(create: (_) => _bloc)],
-      child: BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
-        listenWhen: (previous, current) {
-          return previous.currentLocation == null &&
-              current.currentLocation != null;
-        },
-        listener: (context, state) {
-          _mapController?.animateCamera(
-            CameraUpdate.newLatLngZoom(state.currentLocation!, 12),
-          );
-        },
+      child: MultiBlocListener(
+        listeners: [
+          // when detected current location
+          BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
+            listenWhen: (previous, current) {
+              return previous.currentLocation == null &&
+                  current.currentLocation != null;
+            },
+            listener: (context, state) {
+              _mapController?.animateCamera(
+                CameraUpdate.newLatLngZoom(state.currentLocation!, 12),
+              );
+            },
+          ),
+          // when selected location
+          BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
+            listenWhen: (previous, current) {
+              return previous.location == null && current.location != null;
+            },
+            listener: (context, state) {
+              // TODO: need show modal UI with address search
+            },
+          ),
+        ],
         child: BlocBuilder<SelectLocationScreenBloc, SelectLocationScreenState>(
           builder: (context, state) {
             final markers = <Marker>{};
@@ -84,7 +102,9 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                         _mapController = controller;
                       },
                       onLongPress: (LatLng value) {
-                        _bloc.add(SetLocation(location: value));
+                        if (!state.searching) {
+                          _bloc.add(SetLocation(location: value));
+                        }
                       },
                       markers: markers,
                     ),

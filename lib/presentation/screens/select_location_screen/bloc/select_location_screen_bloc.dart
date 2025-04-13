@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:domain/domain.dart' as domain;
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,11 +12,14 @@ part 'select_location_screen_state.dart';
 
 class SelectLocationScreenBloc
     extends Bloc<SelectLocationScreenEvent, SelectLocationScreenState> {
-  SelectLocationScreenBloc() : super(SelectLocationScreenState()) {
+  SelectLocationScreenBloc({required this.mapRepository})
+    : super(SelectLocationScreenState()) {
     on<Initialize>(_onInitialize);
     on<SetLocation>(_onSetLocation);
     on<ResetLocation>(_onResetLocation);
   }
+
+  final domain.MapRepository mapRepository;
 
   FutureOr<void> _onInitialize(
     Initialize event,
@@ -51,7 +55,35 @@ class SelectLocationScreenBloc
     SetLocation event,
     Emitter<SelectLocationScreenState> emit,
   ) async {
-    emit(state.copyWith(location: event.location));
+    emit(
+      state.copyWith(
+        location: event.location,
+        searching: true,
+        clearAddress: true,
+      ),
+    );
+
+    final result = await mapRepository.getAddress(
+      config: domain.AddressConfig(location: event.location),
+    );
+
+    if (result.hasData) {
+      emit(
+        state.copyWith(
+          location: event.location,
+          searching: false,
+          address: result.data,
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          location: event.location,
+          searching: false,
+          clearAddress: true,
+        ),
+      );
+    }
   }
 
   FutureOr<void> _onResetLocation(
