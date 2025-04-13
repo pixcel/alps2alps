@@ -71,8 +71,8 @@ class SelectLocationScreenBloc
 
     state = this.state;
 
-    if (state.location == result.data?.location) {
-      if (result.hasData) {
+    if (result.hasData) {
+      if (state.location == result.data?.location) {
         emit(
           state.copyWith(
             location: event.location,
@@ -80,15 +80,15 @@ class SelectLocationScreenBloc
             address: result.data,
           ),
         );
-      } else {
-        emit(
-          state.copyWith(
-            location: event.location,
-            searching: false,
-            clearAddress: true,
-          ),
-        );
       }
+    } else {
+      emit(
+        state.copyWith(
+          location: event.location,
+          searching: false,
+          clearAddress: true,
+        ),
+      );
     }
   }
 

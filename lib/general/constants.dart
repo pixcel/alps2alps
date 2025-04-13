@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart'
 class Constants {
   /// General
   static const splashScreenDelay = 2; // seconds
+  static const googleGeocodingApiKey = 'AIzaSyDFNsAipjjy1jRz1aEKcEJuoqQ9zCNjUQU';
 
   /// List of default orientation
   static const List<DeviceOrientation> orientations = [

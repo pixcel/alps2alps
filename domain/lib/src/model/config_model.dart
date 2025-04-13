@@ -1,3 +1,9 @@
 class ConfigModel {
-  // TODO: in general pass config for communicate with API
+  final String apiUrl;
+  final String geocodingApiKey;
+
+  ConfigModel({
+    required this.apiUrl,
+    required this.geocodingApiKey,
+  });
 }

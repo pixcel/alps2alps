@@ -9,6 +9,12 @@ class ConfigRepository extends domain.ConfigRepository {
   domain.ConfigModel get config => _config;
 
   @override
+  String get baseApiUrl => _config.apiUrl;
+
+  @override
+  String get geocodingApiKey => _config.geocodingApiKey;
+
+  @override
   Future<void> initialize({required domain.ConfigModel config}) async {
     _config = config;
   }

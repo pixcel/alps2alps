@@ -25,7 +25,13 @@ void main() {
         GetIt.instance.allReady().whenComplete(() async {
           await SystemChrome.setPreferredOrientations(Constants.orientations);
           final configRepository = getIt<domain.ConfigRepository>();
-          await configRepository.initialize(config: domain.ConfigModel());
+          // TODO: api url is empty because no any integration with API
+          await configRepository.initialize(
+            config: domain.ConfigModel(
+              apiUrl: '',
+              geocodingApiKey: Constants.googleGeocodingApiKey,
+            ),
+          );
 
           runApp(
             MaterialApp(

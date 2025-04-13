@@ -198,7 +198,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                                     ),
                                   ),
                                   SizedBox(
-                                    height: design.AppSpacingTokens.four,
+                                    height: design.AppSpacingTokens.six,
                                   ),
                                   if (state.address == null &&
                                       !state.searching) ...[
@@ -263,8 +263,8 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                                 ],
                               ),
                               Positioned(
-                                right: design.AppSpacingTokens.four,
-                                top: design.AppSpacingTokens.four,
+                                right: design.AppSpacingTokens.two,
+                                top: design.AppSpacingTokens.two,
                                 child: Visibility(
                                   visible: state.address != null,
                                   maintainSize: true,

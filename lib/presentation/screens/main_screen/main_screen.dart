@@ -194,7 +194,7 @@ class _MainScreenState extends State<MainScreen>
                                 Text(
                                   state.pickupAddress == null
                                       ? 'No set'
-                                      : state.pickupAddress.toString(),
+                                      : state.pickupAddress?.address ?? '',
                                   style: design.AppTextStylesTokens.heading04(
                                     color: design.AppColorsTokens.text04,
                                   ),
@@ -257,7 +257,7 @@ class _MainScreenState extends State<MainScreen>
                                 Text(
                                   state.destinationAddress == null
                                       ? 'No set'
-                                      : state.destinationAddress.toString(),
+                                      : state.destinationAddress?.address ?? '',
                                   style: design.AppTextStylesTokens.heading04(
                                     color: design.AppColorsTokens.text04,
                                   ),
