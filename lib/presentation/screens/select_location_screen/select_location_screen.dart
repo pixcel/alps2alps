@@ -1,6 +1,7 @@
 import 'package:alps2alps/di/configure_dependencies.dart';
 import 'package:alps2alps/general/constants.dart';
 import 'package:alps2alps/presentation/screens/select_location_screen/bloc/select_location_screen_bloc.dart';
+import 'package:alps2alps/presentation/widgets/app_progress_widget.dart';
 import 'package:design/design.dart' as design;
 import 'package:domain/domain.dart' as domain;
 import 'package:flutter/material.dart';
@@ -9,11 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SelectLocationScreen extends StatefulWidget {
-  const SelectLocationScreen({super.key});
+  const SelectLocationScreen({required this.title, super.key});
 
-  static Route route() {
+  final String title;
+
+  static Route route({required String title}) {
     return MaterialPageRoute(
-      builder: (_) => SelectLocationScreen(),
+      builder: (_) => SelectLocationScreen(title: title),
       settings: const RouteSettings(),
     );
   }
@@ -24,7 +27,11 @@ class SelectLocationScreen extends StatefulWidget {
 
 class _SelectLocationScreenState extends State<SelectLocationScreen>
     with SingleTickerProviderStateMixin {
+  static const minSizeAddressSheet = 0.1;
+  static const maxSizeAddressSheet = 0.2;
+
   late final SelectLocationScreenBloc _bloc;
+  late final DraggableScrollableController _addressSheetController;
 
   GoogleMapController? _mapController;
 
@@ -33,12 +40,14 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
     _bloc = SelectLocationScreenBloc(
       mapRepository: getIt<domain.MapRepository>(),
     )..add(const Initialize());
+    _addressSheetController = DraggableScrollableController();
     super.initState();
   }
 
   @override
   void dispose() {
     _bloc.close();
+    _addressSheetController.dispose();
     super.dispose();
   }
 
@@ -60,13 +69,21 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
               );
             },
           ),
-          // when selected location
+          // when detected address
           BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
             listenWhen: (previous, current) {
-              return previous.location == null && current.location != null;
+              return previous.address == null && current.address != null;
             },
             listener: (context, state) {
-              // TODO: need show modal UI with address search
+              _expandAddressSheet();
+            },
+          ),
+          BlocListener<SelectLocationScreenBloc, SelectLocationScreenState>(
+            listenWhen: (previous, current) {
+              return previous.address != null && current.address == null;
+            },
+            listener: (context, state) {
+              _collapseAddressSheet();
             },
           ),
         ],
@@ -102,9 +119,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                         _mapController = controller;
                       },
                       onLongPress: (LatLng value) {
-                        if (!state.searching) {
-                          _bloc.add(SetLocation(location: value));
-                        }
+                        _bloc.add(SetLocation(location: value));
                       },
                       markers: markers,
                     ),
@@ -125,7 +140,7 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                           boxShadow: [design.AppDecorationTokens.boxShadow1],
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
                               onPressed: () {
@@ -134,26 +149,151 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
                               icon: Icon(Icons.arrow_back_ios),
                             ),
                             Text(
-                              'Please select point',
+                              widget.title,
                               style: design.AppTextStylesTokens.heading04(
                                 color: design.AppColorsTokens.text03,
-                              ),
-                            ),
-                            Visibility(
-                              visible: state.location != null,
-                              maintainSize: true,
-                              maintainAnimation: true,
-                              maintainState: true,
-                              child: IconButton(
-                                onPressed: () {
-                                  _bloc.add(ResetLocation());
-                                },
-                                icon: Icon(Icons.close),
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ),
+
+                    // Bottom Sheet UI (non-modal)
+                    DraggableScrollableSheet(
+                      controller: _addressSheetController,
+                      initialChildSize: minSizeAddressSheet,
+                      minChildSize: minSizeAddressSheet,
+                      maxChildSize: maxSizeAddressSheet,
+                      builder: (context, scrollController) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(
+                                design.AppSpacingTokens.five,
+                              ),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: design.AppSpacingTokens.twoAndHalf,
+                                offset: Offset(0, -design.AppSpacingTokens.one),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              ListView(
+                                controller: scrollController,
+                                padding: EdgeInsets.all(
+                                  design.AppSpacingTokens.four,
+                                ),
+                                children: [
+                                  Center(
+                                    child: Container(
+                                      width: design.AppSpacingTokens.ten,
+                                      height: design.AppSpacingTokens.one,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: design.AppSpacingTokens.four,
+                                  ),
+                                  if (state.address == null &&
+                                      !state.searching) ...[
+                                    Text(
+                                      'Please select point on the map by long press',
+                                      style: design.AppTextStylesTokens.body02(
+                                        color: design.AppColorsTokens.text04,
+                                      ),
+                                    ),
+                                  ] else if (state.searching) ...[
+                                    Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                              right:
+                                                  design.AppSpacingTokens.two,
+                                            ),
+                                            child: Text(
+                                              'Loadin address, please wait ...',
+                                              style: design
+                                                  .AppTextStylesTokens.body02(
+                                                color:
+                                                    design
+                                                        .AppColorsTokens
+                                                        .text04,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        AppProgressWidget(
+                                          size: design.AppSpacingTokens.four,
+                                        ),
+                                      ],
+                                    ),
+                                  ] else if (state.address != null) ...[
+                                    Text(
+                                      'Address: ${state.address!.address}',
+                                      style: design.AppTextStylesTokens.body02(
+                                        color: design.AppColorsTokens.text04,
+                                      ),
+                                    ),
+                                  ],
+                                  if (state.address != null) ...[
+                                    SizedBox(
+                                      height: design.AppSpacingTokens.eight,
+                                    ),
+                                    ElevatedButton(
+                                      onPressed:
+                                          state.address == null
+                                              ? null
+                                              : () {
+                                                Navigator.pop(
+                                                  context,
+                                                  state.address,
+                                                );
+                                              },
+                                      child: Text('Select'),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              Positioned(
+                                right: design.AppSpacingTokens.four,
+                                top: design.AppSpacingTokens.four,
+                                child: Visibility(
+                                  visible: state.address != null,
+                                  maintainSize: true,
+                                  maintainAnimation: true,
+                                  maintainState: true,
+                                  child: Container(
+                                    width: design.AppSpacingTokens.eight,
+                                    height: design.AppSpacingTokens.eight,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.grey[300], // gray background
+                                      shape:
+                                          BoxShape
+                                              .circle, // or BoxShape.rectangle if you want square
+                                    ),
+                                    child: IconButton(
+                                      iconSize: design.AppSpacingTokens.four,
+                                      onPressed: () {
+                                        _bloc.add(ResetLocation());
+                                      },
+                                      icon: Icon(Icons.close),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -162,6 +302,22 @@ class _SelectLocationScreenState extends State<SelectLocationScreen>
           },
         ),
       ),
+    );
+  }
+
+  void _expandAddressSheet() {
+    _addressSheetController.animateTo(
+      maxSizeAddressSheet,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _collapseAddressSheet() {
+    _addressSheetController.animateTo(
+      minSizeAddressSheet,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
     );
   }
 }

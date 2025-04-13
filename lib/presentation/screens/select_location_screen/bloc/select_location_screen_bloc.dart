@@ -55,6 +55,8 @@ class SelectLocationScreenBloc
     SetLocation event,
     Emitter<SelectLocationScreenState> emit,
   ) async {
+    var state = this.state;
+
     emit(
       state.copyWith(
         location: event.location,
@@ -67,22 +69,26 @@ class SelectLocationScreenBloc
       config: domain.AddressConfig(location: event.location),
     );
 
-    if (result.hasData) {
-      emit(
-        state.copyWith(
-          location: event.location,
-          searching: false,
-          address: result.data,
-        ),
-      );
-    } else {
-      emit(
-        state.copyWith(
-          location: event.location,
-          searching: false,
-          clearAddress: true,
-        ),
-      );
+    state = this.state;
+
+    if (state.location == result.data?.location) {
+      if (result.hasData) {
+        emit(
+          state.copyWith(
+            location: event.location,
+            searching: false,
+            address: result.data,
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            location: event.location,
+            searching: false,
+            clearAddress: true,
+          ),
+        );
+      }
     }
   }
 
@@ -90,6 +96,8 @@ class SelectLocationScreenBloc
     ResetLocation event,
     Emitter<SelectLocationScreenState> emit,
   ) async {
-    emit(state.copyWith(clearLocation: true));
+    emit(
+      state.copyWith(clearLocation: true, clearAddress: true, searching: false),
+    );
   }
 }

@@ -180,7 +180,11 @@ class _MainScreenState extends State<MainScreen>
                               final result = await Navigator.of(
                                 context,
                                 rootNavigator: true,
-                              ).push(SelectLocationScreen.route());
+                              ).push(
+                                SelectLocationScreen.route(
+                                  title: 'Pick-Up Location',
+                                ),
+                              );
 
                               if (result is LatLng) {
                                 _mainScreenBloc.add(
@@ -236,7 +240,11 @@ class _MainScreenState extends State<MainScreen>
                               final result = await Navigator.of(
                                 context,
                                 rootNavigator: true,
-                              ).push(SelectLocationScreen.route());
+                              ).push(
+                                SelectLocationScreen.route(
+                                  title: 'Drop-Off Destination',
+                                ),
+                              );
 
                               if (result is LatLng) {
                                 _mainScreenBloc.add(
